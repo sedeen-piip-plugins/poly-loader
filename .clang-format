@@ -1,0 +1,24 @@
+# We base our style off of the Google style
+BasedOnStyle: Google
+
+# Adjust the column limit
+ColumnLimit: 119
+
+# Force pointers and references to right
+DerivePointerAlignment: false
+PointerAlignment: Right
+
+# Configure constructor initializers
+BreakConstructorInitializers: BeforeComma
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+
+# Allow empty lines at the beginning of blocks
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+# We keep blocks of code on their own lines. This gives you more control over
+# where breakpoints are set.
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
