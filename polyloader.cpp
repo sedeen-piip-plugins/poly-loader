@@ -3,6 +3,8 @@
 #include "Geometry.h"
 #include "Global.h"
 
+#include <fstream>
+
 #include "Poco/ClassLibrary.h"
 
 POCO_BEGIN_MANIFEST(sedeen::algorithm::AlgorithmBase)
@@ -22,19 +24,27 @@ void PolyLoader::init(const image::ImageHandle &image) {
 
 void PolyLoader::run() {
   if (open_file_dialog_.isChanged()) {
-    std::vector<file::Location> file_locations = open_file_dialog_;
+    std::vector<file::Location> const file_locations = open_file_dialog_;
 
+    if (file_locations.size() > 0) {
+      auto const &file_location = file_locations[0];
 
+      std::ifstream file_stream(file_location.getFilename());
+      
+      std::vector<PointF> vertices;
+      int x, y;
+      while (file_stream >> x >> y) {
+        vertices.emplace_back(x, y);
+      }
 
-    std::vector<PointF> vertices;
-    vertices.emplace_back(0.0, 0.0);
-    vertices.emplace_back(0.0, 100.0);
-    vertices.emplace_back(100.0, 100.0);
-    vertices.emplace_back(100.0, 0.0);
+      Polygon poly(vertices);
 
-    Polygon poly(vertices);
+      GraphicStyle style;
+      Pen style_pen(RGBColor(255, 0, 0));
+      style.setPen(style_pen);
 
-    poly_result_.drawPolygon(poly);
+      poly_result_.drawPolygon(poly, style);
+    }
   }
 }
 
