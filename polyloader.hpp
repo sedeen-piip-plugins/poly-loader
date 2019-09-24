@@ -16,8 +16,9 @@ class PolyLoader : public AlgorithmBase {
   void run() final;
 
  private:
-  algorithm::FileDialogParameter<parameter::OpenFileDialog> open_file_dialog_;
   algorithm::OverlayResult poly_result_;
+
+  std::string filepath_;
 };
 
 }  // namespace sedeen::algorithm

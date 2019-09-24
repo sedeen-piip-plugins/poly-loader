@@ -2,8 +2,10 @@
 
 #include "Geometry.h"
 #include "Global.h"
+#include "Image.h"
 
 #include <fstream>
+#include <filesystem>
 
 #include "Poco/ClassLibrary.h"
 
@@ -13,39 +15,38 @@ POCO_END_MANIFEST
 
 namespace sedeen::algorithm {
 
-PolyLoader::PolyLoader()
-    : open_file_dialog_()
-    , poly_result_() {}
+PolyLoader::PolyLoader() : poly_result_() {}
 
 void PolyLoader::init(const image::ImageHandle &image) {
   poly_result_ = createOverlayResult(*this);
-  open_file_dialog_ = createOpenFileDialogParameter(*this, "Polygon File", "File containing list of polygon points");
+
+  // get image filepath
+  auto metadata = image->getMetaData();
+  filepath_ = metadata->get(image::StringTags::SOURCE_DESCRIPTION, 0);
 }
 
 void PolyLoader::run() {
-  if (open_file_dialog_.isChanged()) {
-    std::vector<file::Location> const file_locations = open_file_dialog_;
+  namespace fs = std::filesystem;
 
-    if (file_locations.size() > 0) {
-      auto const &file_location = file_locations[0];
+  // get the path of the overlay from the filepath
+  auto overlay_filepath = fs::path(filepath_);
+  overlay_filepath.replace_extension(".txt");
 
-      std::ifstream file_stream(file_location.getFilename());
-      
-      std::vector<PointF> vertices;
-      int x, y;
-      while (file_stream >> x >> y) {
-        vertices.emplace_back(x, y);
-      }
+  std::ifstream file_stream(overlay_filepath.string());
 
-      Polygon poly(vertices);
-
-      GraphicStyle style;
-      Pen style_pen(RGBColor(255, 0, 0));
-      style.setPen(style_pen);
-
-      poly_result_.drawPolygon(poly, style);
-    }
+  std::vector<PointF> vertices;
+  int x, y;
+  while (file_stream >> x >> y) {
+    vertices.emplace_back(x, y);
   }
+
+  Polygon poly(vertices);
+
+  GraphicStyle style;
+  Pen style_pen(RGBColor(255, 0, 0));
+  style.setPen(style_pen);
+
+  poly_result_.drawPolygon(poly, style, filepath_);
 }
 
 }  // namespace sedeen::algorithm
