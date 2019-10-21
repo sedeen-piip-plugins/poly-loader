@@ -6,6 +6,7 @@
 
 #include <fstream>
 #include <filesystem>
+#include <sstream>
 
 #include "Poco/ClassLibrary.h"
 
@@ -14,6 +15,23 @@ POCO_EXPORT_CLASS(sedeen::algorithm::PolyLoader)
 POCO_END_MANIFEST
 
 namespace sedeen::algorithm {
+
+namespace {
+
+  void writePolygon(std::vector<PointF> const &vertices, OverlayResult &result, std::string const &name) {
+    if (vertices.empty()) {
+      return;
+    }
+
+    Polygon poly(vertices);
+
+    GraphicStyle style;
+    Pen style_pen(RGBColor(255, 0, 0));
+    style.setPen(style_pen);
+
+    result.drawPolygon(poly, style, name);
+  }
+}
 
 PolyLoader::PolyLoader() : poly_result_() {}
 
@@ -35,18 +53,24 @@ void PolyLoader::run() {
   std::ifstream file_stream(overlay_filepath.string());
 
   std::vector<PointF> vertices;
-  int x, y;
-  while (file_stream >> x >> y) {
-    vertices.emplace_back(x, y);
+
+  std::string current_line;
+  while (std::getline(file_stream, current_line)) {
+    if (current_line.compare("-") == 0) {
+      writePolygon(vertices, poly_result_, filepath_);
+
+      vertices.clear();
+    } else {
+      std::stringstream ss(current_line);
+      int x, y;
+      if (ss >> x >> y) {
+        vertices.emplace_back(x, y);
+      } else {
+        continue;
+      }
+    }
   }
-
-  Polygon poly(vertices);
-
-  GraphicStyle style;
-  Pen style_pen(RGBColor(255, 0, 0));
-  style.setPen(style_pen);
-
-  poly_result_.drawPolygon(poly, style, filepath_);
+  writePolygon(vertices, poly_result_, filepath_);
 }
 
 }  // namespace sedeen::algorithm
